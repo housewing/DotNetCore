@@ -1,0 +1,70 @@
+﻿@model IEnumerable<prototype.Models.MortgageInfo>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h2>MortgageInfo</h2>
+        <a asp-action="AddOrEdit" class="btn btn-success">Create Mortgage</a>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.City)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Area)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Type)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Price)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Num)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.City)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Area)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Type)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Price)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Num)
+                        </td>
+                        <td>
+                            <a asp-action="AddOrEdit" asp-route-id="@item.Id">Edit</a> |
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="text-danger ml-1" onclick="return confirm('Are you sure to delete this record?')">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="row">
+            <div class="col-md-4">
+                <h4 class="text-center">總計: @ViewBag.mTotalPrice</h4>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <a href="@Url.Action("Index", "Home")" class="btn btn-secondary btn-block">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,148 @@
+﻿@model IEnumerable<string>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@section Scripts {
+    <script>
+        var tmpList = '@Html.Raw(Json.Serialize(Model))';
+        var IndexList = JSON.parse(tmpList);
+
+
+        // parseFloat(IndexList[11]).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')
+        $("#col1").text(IndexList[0]);
+        $("#col2").text(IndexList[1]);
+        $("#col3").text(IndexList[2]);
+        $("#col4").text(IndexList[3]);
+        $("#col5").text(IndexList[4]);
+        $("#col6").text(IndexList[5]);
+        $("#col7").text(IndexList[6]);
+        $("#col8").text(IndexList[7]);
+        $("#col9").text(IndexList[8]);
+        $("#col10").text(IndexList[9]);
+        $("#col11").text(IndexList[10]);
+        $("#col12").text(IndexList[11]);
+
+
+        $("body").on("click", "a#submitBtn", function () {
+            event.preventDefault();
+
+            var form = $("<form>", {
+                action: '@Url.Action("Index", "Home")',
+                method: "POST"
+            }).append($("<input>", {
+                "name": "detail",
+                "value": IndexList[4] + "&" + IndexList[7] + "&" + IndexList[8] + "&" + IndexList[9] + "&" + IndexList[11] + "&" + $("#col13").val() + "&" + $("#col14").val(),
+                "type": 'hidden'
+            }));
+
+            form.appendTo("body").submit();
+        });
+    </script>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title text-center">Home Page</h2>
+        <hr class="my-4">
+        <div class="row">
+            <div class="col-lg-4">財務狀況評分：</div>
+            <div class="col-lg-4" id="col1"></div>
+            <div class="col-lg-4">
+                <a href="@Url.Action("Index1", "Home")">Index1</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">經營管理與展望評分：</div>
+            <div class="col-lg-4" id="col2"></div>
+            <div class="col-lg-4">
+                <a href="@Url.Action("Index2", "Home")">Index2</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">信用評等：</div>
+            <div class="col-lg-4" id="col3"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">總分：</div>
+            <div class="col-lg-4" id="col4"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">信用參考額度(千元)：</div>
+            <div class="col-lg-4" id="col5"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">次級市場利率(%)：</div>
+            <div class="col-lg-4" id="col6"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">風險成本(%)：</div>
+            <div class="col-lg-4" id="col7"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">參考貸款利率(%)：</div>
+            <div class="col-lg-4" id="col8"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">不動產評估(千元)：</div>
+            <div class="col-lg-4" id="col9"></div>
+            <div class="col-lg-4">
+                <a href="@Url.Action("Index", "Mortgage")">MortgageInfo</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">股票評估(千元)：</div>
+            <div class="col-lg-4" id="col10"></div>
+            <div class="col-lg-4">
+                <a href="@Url.Action("Index", "Stock")">StockInfo</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">擔保品合計(千元)：</div>
+            <div class="col-lg-4" id="col11"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">參考可貸款總額度(千元)：</div>
+            <div class="col-lg-4" id="col12"></div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">貸款資金用途：</div>
+            <div class="col-lg-4">
+                <select id="col13">
+                    <option value="">請選擇</option>
+                    <option value="營運週轉">營運週轉</option>
+                    <option value="增購固定資產">增購固定資產</option>
+                    <option value="購買有價證券">購買有價證券</option>
+                    <option value="償還借款">償還借款</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div class="col-lg-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">還款來源：</div>
+            <div class="col-lg-4">
+                <select id="col14">
+                    <option value="">請選擇</option>
+                    <option value="營業收入">營業收入</option>
+                    <option value="出售固定資產">出售固定資產</option>
+                    <option value="借款償還">借款償還</option>
+                    <option value="現金增資">現金增資</option>
+                    <option value="出售有價證券">出售有價證券</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div class="col-lg-4">
+                <a href="" id="submitBtn">Submit</a>
+            </div>
+        </div>
+    </div>
+</div>

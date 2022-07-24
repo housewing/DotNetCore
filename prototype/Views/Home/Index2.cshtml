@@ -1,0 +1,390 @@
+﻿@model IEnumerable<string>
+@{
+    ViewData["Title"] = "Index2";
+}
+
+@section Styles{
+    <style>
+        body {
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+    </style>
+}
+
+@section Scripts
+    {
+    <script>
+        var tmpList = '@Html.Raw(Json.Serialize(Model))';
+        var Index2List = JSON.parse(tmpList);
+        //初始化
+        $('.index2').each(function (i, e) {
+            //console.log(i, Index2List[i], e);
+            var checked = $(this).prop("checked");
+            if (Index2List[i] != "") {
+                if (typeof checked === "undefined") {
+                    $(this).val(Index2List[i]);
+                }
+                else {
+                    $(this).prop('checked', true);
+                }
+            }
+
+            if (i == 42)    //最後一個
+                calScore()
+        });
+        // console.log("one", Index2List);
+
+        function calScore() {
+            var sum = 0;
+            $('.index2').each(function (i, e) {
+                var val = $(this).val();
+                var checked = $(this).prop("checked");
+
+                //更新 Index2List
+                if (typeof checked === "undefined" || checked) {
+                    Index2List[i] = val;
+                }
+                else {
+                    Index2List[i] = "";
+                }
+
+                if ($.isNumeric(val)) {
+                    if (typeof checked === "undefined" || checked) {
+                        sum += parseFloat(val);
+                    }
+                }
+            });
+            // console.log(Index2List);
+            $('#result').text("總計: " + sum);
+        }
+
+        $('select').change(function () {
+            calScore()
+        });
+
+        $('input').change(function () {
+            calScore()
+        });
+
+        function i2lToString(accumulator, currentValue) {
+            return accumulator + '&' + currentValue;
+        }
+
+        $("body").on("click", "a#backBtn", function () {
+            event.preventDefault();
+
+            var form = $("<form>", {
+                action: '@Url.Action("Index2", "Home")',
+                method: "POST"
+            }).append($("<input>", {
+                "name": "i2l",
+                "value": Index2List.reduce(i2lToString),
+                "type": 'hidden'
+            }));
+
+            form.appendTo("body").submit();
+        });
+    </script>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title text-center">Index2</h2>
+        <hr class="my-4">
+
+        <form>
+            <div class="row">
+                <div class="col-md-6">
+                    <h2 class="card-title text-center">原始評分</h2>
+                    <hr class="my-4">
+                    <div class="form-group">
+                        <label>經營者專業背景</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="3">具本業經歷7年以上</option>
+                            <option value="2">具本業經歷3~6年</option>
+                            <option value="1">具本業經歷2年以下</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>經營者一般信評</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="2">信評良好,踏實穩健</option>
+                            <option value="1">信評尚佳,無不良記錄</option>
+                            <option value="0">資信平平,無不良記錄</option>
+                            <option value="-1">有不良記錄,或喜愛炒地、炒匯、炒股</option>
+                            <option value="-2">有眾多不良記錄,或形象甚差</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>營運規模</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="10">營收300億元以上</option>
+                            <option value="9">營收200億元~300億元</option>
+                            <option value="8">營收150億元~200億元</option>
+                            <option value="7">營收100億元~150億元</option>
+                            <option value="6">營收50億元~100億元(電子業或買賣業為75億元~100億元)</option>
+                            <option value="5">營收30億元~50億元(電子業或買賣業為50億元~75億元)</option>
+                            <option value="4">營收20億元~30億元(電子業或買賣業為30億元~50億元)</option>
+                            <option value="3">營收10億元~20億元(電子業或買賣業為20億元~30億元)</option>
+                            <option value="2">營收3億元~10億元(電子業或買賣業為8億元~20億元)</option>
+                            <option value="1">營收3億元(電子業或買賣業為8億元)以下</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>轉投資事業之影響</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="4">轉投資事業營運良好,具相輔相成效果,助益母公司甚大</option>
+                            <option value="2">轉投資事業營運尚可,尚有助益母公司</option>
+                            <option value="1">略具正面影響</option>
+                            <option value="0">無轉投資事業,或轉投資金額或其收益甚小無影響</option>
+                            <option value="-1">略具負面影響</option>
+                            <option value="-2">轉投資事業營運欠佳,投資金額偏高</option>
+                            <option value="-4">海內外轉投資複雜,金額龐大,多數營運欠佳,成為母公司包袱</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>銀行往來信用情形</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="2">公司或負責人連保人無不良紀錄</option>
+                            <option value="0">公司或負責人連保人曾有不良紀錄,但已註記</option>
+                            <option value="-2">公司或負責人連保人有不良紀錄,情況尚屬輕微</option>
+                            <option value="-4">公司或負責人連保人有不良紀錄,情況嚴重</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>財報可信度、透明度</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="4">公開發行公司,由勤業眾信、資誠、安侯建業及安永等會計師事務所簽証</option>
+                            <option value="3">公開發行公司,由上列以外會計師事務所簽証</option>
+                            <option value="2">未公開發行公司,由上列會計事務所簽証</option>
+                            <option value="1">未公開發行公司,由上列以外會計事務所簽証</option>
+                            <option value="-2">揭露不全,或疑點未獲公司合理解釋</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>資金調度能力</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="3">債信優良,能自金融機構順利取得無擔保融資或發行公司債取得資金。於金融機構動用餘額在授信額度5成以下</option>
+                            <option value="2">舉借能力尚佳,於金融機構動用餘額在授信額度7成以下</option>
+                            <option value="1">舉借能力平平,需人保或物保</option>
+                            <option value="0">債信欠佳,需集團企業保證或財援</option>
+                            <option value="-1">為金融機構收縮銀根對象,財務調度困難</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>所屬集團評等</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="2">A級</option>
+                            <option value="1">B級</option>
+                            <option value="0">C級或不屬於任何集團或集團無評等</option>
+                            <option value="-1">D級或E級</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>董監持股設質</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="2">無設質</option>
+                            <option value="1">無設質資訊可查,或設質15%以內</option>
+                            <option value="0">設質15%~25%</option>
+                            <option value="-1">設質25%~40%</option>
+                            <option value="-2">設質40%~60%</option>
+                            <option value="-3">設質60%以上</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>關係人銷貨依存度=對關係人銷貨營業收入</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="0">0%~20%</option>
+                            <option value="-1">21%~40%</option>
+                            <option value="-2">41%~70%</option>
+                            <option value="-3">70%以上</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>對外背書保證及金援之影響</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="0">背書保證金額及金援佔淨值15%以下，且不致產生影響</option>
+                            <option value="-1">背書保證金額及金援佔淨值15%~35%</option>
+                            <option value="-2">背書保證金額及金援佔淨值35%~50%</option>
+                            <option value="-3">背書保證金額及金援佔淨值50%以上</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>近三年資本額增加情形</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="2">近三年有二度增資</option>
+                            <option value="1">近三年有一度增資</option>
+                            <option value="0">近三年中資本額無增減</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>業界地位</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="3">舉足輕重地位</option>
+                            <option value="2">尚具地位</option>
+                            <option value="1">地位平平</option>
+                            <option value="0">毫無地位</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>公司所屬產業發展前景</label>
+                        <select class="form-control animations-select index2">
+                            <option value="">請選擇</option>
+                            <option value="3">產業具高度成長性,且自身具競爭優勢</option>
+                            <option value="2">產業具成長性及自身具競爭力尚佳</option>
+                            <option value="1">產業具尚成長性,但產業循環波動性大,獲利不穩</option>
+                            <option value="0">產業發展趨向成熟期,或競爭者眾,獲利有限</option>
+                            <option value="-2">競爭甚烈,難以獲利</option>
+                            <option value="-4">夕陽產業</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h2 class="card-title text-center">調整事項</h2>
+                    <hr class="my-4">
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="20">
+                        <label>規模較大公營事業-200億資本額以上</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="15">
+                        <label>其他公營事業</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="10">
+                        <label>政府政策支持產業</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="10">
+                        <label>未來一年總體經濟變化及產業景氣展望顯著變佳</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="10">
+                        <label>股權結構佳,股東背景堅實</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="10">
+                        <label>固定資產未辦理重估,成本低於市價</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="10">
+                        <label>長期股權投資具豐碩潛在利益,帳上並無列示</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="5">
+                        <label>逾放比已獲改善</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="5">
+                        <label>存貨去化能力獲改善及未來營收獲改善</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="5">
+                        <label>有價證券等投資標的之資產品質佳</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-5">
+                        <label>與上下游廠商間之往來出現異常</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-5">
+                        <label>庫藏股過高</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-5">
+                        <label>資金用途或還款來源不當</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-5">
+                        <label>頻頻調降財測</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-5">
+                        <label>短期資金緊俏，信用擴張困難</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-5">
+                        <label>有價證券等投資標的之資產品質差</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-5">
+                        <label>存貨去化能力變差及未來營收變差</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>逾放比大幅提高或已獲改善</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>資產管理欠佳，收帳速度或存貨去化速度變慢</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>投資效益不彰，獲利無法支應利息</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>經營層、財務主管、簽證會計師頻換手</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>董事會趨內部化,家族化</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>內部重大異常關係人交易</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>董監事持續申讓持股</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>經營者偏好炒股</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>股價嚴重下跌或有不利於公司形象之負面消息</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-10">
+                        <label>未來一年總體經濟變化及產業景氣展望顯著變差</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-15">
+                        <label>會計師查核保留意見</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" class="index2" value="-20">
+                        <label>其他(請簡述調整理由)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <h4 class="text-center" id="result"></h4>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <a href="" class="btn btn-secondary btn-block" id="backBtn">Back to Home</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

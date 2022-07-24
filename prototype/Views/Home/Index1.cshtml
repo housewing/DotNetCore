@@ -1,0 +1,697 @@
+﻿@model IEnumerable<string>
+@{
+    ViewData["Title"] = "Index1";
+}
+
+@section Styles{
+    <style>
+        body {
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .label-index1 {
+            display: inline-block;
+            width: 140px;
+        }
+
+        .toggle.ios, .toggle-on.ios, .toggle-off.ios {
+            border-radius: 20rem;
+        }
+
+        .toggle.ios .toggle-handle {
+            border-radius: 20rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        var tmpList = '@Html.Raw(Json.Serialize(Model))';
+        var Index1List = JSON.parse(tmpList);
+
+        $('#h5').text('貴公司統一編號為' + Index1List[0]);
+
+        //初始化
+        $('.index1').each(function (i, e) {
+            // console.log(i, Index1List[i], e);
+
+            //if (i < 3)
+            //    $(this).parent().children()[0].innerText = Index1List[i + 3] + "營收淨額：";
+
+            var idx = i + 6;
+            var type = $(this).attr('type');
+            var readonly = $(this).prop("readonly");
+            if (Index1List[idx] != "") {
+                if (type === "text") {
+                    if (!readonly)
+                        $(this).val(Index1List[idx]);
+                }
+                else {
+                    $(this).prop('checked', true);
+                }
+            }
+
+            if (i == 54)    //最後一個
+                calScore();
+        });
+
+        function calScore() {
+            var sum = 0;
+            var flag = $("#switch").prop("checked");
+
+            $('.index1').each(function (i, e) {
+                var checked = $(this).prop("checked");
+                var readonly = $(this).prop("readonly");
+
+                if (readonly) {
+                    if (i == 45)
+                        $(this).val(score1());
+                    else if (i == 46)
+                        $(this).val(score2(flag));
+                    else if (i == 47)
+                        $(this).val(score3(flag));
+                    else if (i == 48)
+                        $(this).val(score4());
+                    else if (i == 49)
+                        $(this).val(score5());
+                    else if (i == 50)
+                        $(this).val(score6());
+                    else if (i == 51)
+                        $(this).val(score7());
+                    else if (i == 52)
+                        $(this).val(score8());
+                    else if (i == 53)
+                        $(this).val(score9());
+                    else if (i == 54)
+                        $(this).val(score10(flag));
+                }
+
+                var val = $(this).val();
+
+                //更新 Index1List
+                var idx = i + 6;
+                if (i < 17 || i > 44) {
+                    Index1List[idx] = val;
+                }
+                else {
+                    if (checked)
+                        Index1List[idx] = val;
+                    else
+                        Index1List[idx] = "";
+                }
+
+                if ($.isNumeric(val)) {
+                    if (checked || readonly) {
+                        sum += parseFloat(val);
+                    }
+                }
+            });
+            // console.log(Index1List);
+            $('#result').text("總計: " + sum);
+        }
+
+        $('input').change(function () {
+            calScore();
+        });
+
+        $('input').keyup(function () {
+            calScore();
+        });
+
+        function i1lToString(accumulator, currentValue) {
+            return accumulator + '&' + currentValue;
+        }
+
+        $("body").on("click", "a#backBtn", function () {
+            event.preventDefault();
+
+            var form = $("<form>", {
+                action: '@Url.Action("Index1", "Home")',
+                method: "POST"
+            }).append($("<input>", {
+                "name": "i1l",
+                "value": Index1List.reduce(i1lToString),
+                "type": 'hidden'
+            }));
+
+            form.appendTo("body").submit();
+        });
+
+        // 營收成長率 = ((去年營業收入淨額/前年營業收入淨額-1) + (今年營業收入淨額/去年營業收入淨額-1)) / 2
+        function score1() {
+            var tmp1 = parseInt(Index1List[6]) //前年營業收入淨額
+            var tmp2 = parseInt(Index1List[7]) //去年
+            var tmp3 = parseInt(Index1List[8]) //今年
+
+            var val1 = 0, val2 = 0, val3 = 0;
+            if (tmp1 == 0)
+                val1 = 0;
+            else
+                val1 = tmp2 / tmp1 - 1;
+
+            if (tmp2 == 0)
+                val2 = 0;
+            else
+                val2 = tmp3 / tmp2 - 1;
+
+            if (val1 == 0 && val2 == 0)
+                val3 = 0;
+            else
+                val3 = (val1 + val2) / 2;
+
+            if (val1 > 0.1 && val2 > 0.1)
+                return "5";
+            else if (val1 > 0.08 && val2 > 0.08 && val2 > val1)
+                return "4";
+            else if (val1 > 0.05 && val2 > 0.05 && val2 > val1)
+                return "3";
+            else if (val1 >= 0 && val2 >= 0)
+                return "2";
+            else if (val1 < 0 && val2 >= 0)
+                return "1";
+            else if (val1 >= 0 && val2 < 0)
+                return "0";
+            else if (val1 < 0 && val2 < 0 && Math.abs(val3) < 0.1)
+                return "-1";
+            else if (val1 < 0 && val2 < 0 && Math.abs(val3) > 0.1)
+                return "-2";
+            else
+                return "0";
+        }
+
+        //  應收帳款週轉期 = 365/（今年營業收入淨額/今年存貨)
+        function score2(flag) {
+            var tmp1 = parseInt(Index1List[8]) //今年營業收入淨額
+            var tmp2 = parseInt(Index1List[17]) //存貨
+
+            if (tmp2 == 0)
+                return "0";
+
+            var s = [];
+            if (flag)
+                s = [61, 81, 121, 151, 150];    //製造
+            else
+                s = [31, 51, 91, 121, 120];     //非製造
+
+            var val1 = 365 / (tmp1 / tmp2);
+            if (val1 < s[0])
+                return "5";
+            else if (val1 < s[1])
+                return "4";
+            else if (val1 < s[2])
+                return "3";
+            else if (val1 < s[3])
+                return "2";
+            else if (val1 > s[4])
+                return "1";
+            else
+                return "0";
+        }
+
+        //  存貨週轉期 = 365/（今年營業成本/今年存貨)
+        function score3(flag) {
+            var tmp1 = parseInt(Index1List[10]) //今年營業成本
+            var tmp2 = parseInt(Index1List[17]) //存貨
+
+            if (tmp2 == 0)
+                return "0";
+
+            var s = [];
+            if (flag)
+                s = [61, 81, 121, 151, 150];    //製造
+            else
+                s = [31, 51, 91, 121, 120];     //非製造
+
+            var val1 = 365 / (tmp1 / tmp2);
+            if (val1 < s[0])
+                return "5";
+            else if (val1 < s[1])
+                return "4";
+            else if (val1 < s[2])
+                return "3";
+            else if (val1 < s[3])
+                return "2";
+            else if (val1 > s[4])
+                return "1";
+            else
+                return "0";
+        }
+
+        //  營收淨利率= 今年的稅前淨利/今年營業收入淨額
+        function score4() {
+            var tmp1 = parseInt(Index1List[12]) //今年的稅前淨利
+            var tmp2 = parseInt(Index1List[8]) //今年營業收入淨額
+
+            if (tmp2 == 0)
+                return "0";
+
+            var val1 = tmp1 / tmp2;
+            if (val1 > 0.1)
+                return "6"
+            else if (val1 > 0.08)
+                return "5"
+            else if (val1 > 0.06)
+                return "4"
+            else if (val1 > 0.04)
+                return "3"
+            else if (val1 > 0.02)
+                return "2"
+            else if (val1 > -0.0001)
+                return "1"
+            else if (val1 > -0.02)
+                return "0"
+            else if (val1 >= -0.04)
+                return "-1"
+            else if (val1 < -0.04)
+                return "-2"
+            else
+                return "0";
+        }
+
+        //  營業利益率 = 今年的營業利益/今年營業收入淨額
+        function score5() {
+            var tmp1 = parseInt(Index1List[11]) //今年的營業利益
+            var tmp2 = parseInt(Index1List[8]) //今年營業收入淨額
+
+            if (tmp2 == 0)
+                return "0";
+
+            var val1 = tmp1 / tmp2;
+            if (val1 > 0.15)
+                return "6";
+            else if (val1 > 0.1)
+                return "5";
+            else if (val1 > 0.075)
+                return "4";
+            else if (val1 > 0.05)
+                return "3";
+            else if (val1 > 0.025)
+                return "2";
+            else if (val1 > -0.0001)
+                return "1";
+            else if (val1 > -0.01)
+                return "0";
+            else if (val1 >= -0.03)
+                return "-1";
+            else if (val1 < -0.03)
+                return "-2";
+            else
+                return "0";
+        }
+
+        //  淨值報酬率 = 今年的稅前淨利/淨值
+        function score6() {
+            var tmp1 = parseInt(Index1List[12]) //今年的稅前淨利
+            var tmp2 = parseInt(Index1List[22]) //淨值
+
+            if (tmp2 == 0)
+                return "0";
+
+            var val1 = tmp1 / tmp2;
+            if (val1 > 0.15)
+                return "6";
+            else if (val1 > 0.1)
+                return "5";
+            else if (val1 > 0.05)
+                return "4";
+            else if (val1 > 0.03)
+                return "3";
+            else if (val1 > 0.01)
+                return "2";
+            else if (val1 > -0.0001)
+                return "1";
+            else if (val1 > -0.03)
+                return "0";
+            else if (val1 >= -0.06)
+                return "-1";
+            else if (val1 < -0.06)
+                return "-2";
+            else
+                return "0";
+        }
+
+        //  流動比率 = 流動資產/流動負債
+        function score7() {
+            var tmp1 = parseInt(Index1List[13]) //流動資產
+            var tmp2 = parseInt(Index1List[19]) //流動負債
+
+            if (tmp2 == 0)
+                return "0";
+
+            var val1 = tmp1 / tmp2;
+            if (val1 > 1.4)
+                return "6";
+            else if (val1 > 1.2)
+                return "5";
+            else if (val1 > 1)
+                return "4";
+            else if (val1 > 0.8)
+                return "3";
+            else if (val1 > 0.6)
+                return "2";
+            else if (val1 <= 0.6)
+                return "1";
+            else
+                return "0";
+        }
+
+        //  速動比率 = (現金+有價證券+備抵呆帳)/流動負債
+        function score8() {
+            var tmp1 = parseInt(Index1List[14]) //現金
+            var tmp2 = parseInt(Index1List[15]) //有價證券
+            var tmp3 = parseInt(Index1List[16]) //備抵呆帳
+            var tmp4 = parseInt(Index1List[19]) //流動負債
+
+            if (tmp4 == 0)
+                return "0";
+
+            var val1 = (tmp1 + tmp2 + tmp3) / tmp4;
+            if (val1 > 0.75)
+                return "4";
+            else if (val1 > 0.5)
+                return "3";
+            else if (val1 > 0.3)
+                return "2";
+            else if (val1 <= 0.3)
+                return "1";
+            else
+                return "0";
+        }
+
+        //  長期固定適合率 = (淨值+長期負債)/(長期投資+固定資產淨額)
+        function score9() {
+            var tmp1 = parseInt(Index1List[22]) //淨值
+            var tmp2 = parseInt(Index1List[20]) //長期負債
+            var tmp3 = parseInt(Index1List[18]) //長期投資
+            var tmp4 = parseInt(Index1List[9]) //固定資產淨額
+
+            if ((tmp3 + tmp4) == 0)
+                return "0";
+
+            var val1 = (tmp1 + tmp2) / (tmp3 + tmp4);
+            if (val1 > 1.4)
+                return "5";
+            else if (val1 > 1)
+                return "4";
+            else if (val1 > 0.85)
+                return "3";
+            else if (val1 > 0.7)
+                return "2";
+            else if (val1 <= 0.7)
+                return "1";
+            else
+                return "0";
+        }
+
+        //  負債比率 = 負債小計/淨值
+        function score10(flag) {
+            var tmp1 = parseInt(Index1List[21]) //負債小計
+            var tmp2 = parseInt(Index1List[22]) //淨值
+
+            if (tmp2 == 0)
+                return "0";
+
+            var s = [];
+            if (flag)
+                s = [0.8, 1, 1.5, 2, 2.51, 2.5];    //製造
+            else
+                s = [1.5, 2, 2.5, 3, 3.51, 3.5];    //非製造
+
+            var val1 = tmp1 / tmp2;
+            if (val1 < s[0])
+                return "12";
+            else if (val1 < s[1])
+                return "10";
+            else if (val1 < s[2])
+                return "8";
+            else if (val1 < s[3])
+                return "6";
+            else if (val1 < s[4])
+                return "4";
+            else if (val1 > s[5])
+                return "2";
+            else
+                return "0";
+        }
+    </script>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title text-center">Index1</h2>
+        <h5 class="card-title text-center" id="h5"></h5>
+        <hr class="my-4">
+
+        <div class="row">
+            <div class="col-md-4">
+                <h2 class="card-title text-center">財報資料</h2>
+                <hr class="my-4">
+                <div class="form-group">
+                    <label class="label-index1">前年營收淨額：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">去年營收淨額：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">今年營收淨額：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">固定資產淨額：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">營業成本：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">營業利益：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">稅前淨利：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">流動資產：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">現　　金：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">有價證券：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">備抵呆帳：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">存　　貨：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">長期投資：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">流動負債：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">長期負債：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">負債小計：</label>
+                    <input type="text" class="index1">
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">淨　　值：</label>
+                    <input type="text" class="index1">
+                </div>
+                <h6>單　　位：千元</h6>
+            </div>
+            <div class="col-md-4">
+                <h2 class="card-title text-center">調整事項</h2>
+                <hr class="my-4">
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="20">
+                    <label>規模較大公營事業-200億資本額以上</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="15">
+                    <label>其他公營事業</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="10">
+                    <label>政府政策支持產業</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="10">
+                    <label>未來一年總體經濟及產業景氣展望顯著變佳</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="10">
+                    <label>股權結構佳,股東背景堅實</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="10">
+                    <label>固定資產未辦理重估,成本低於市價</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="10">
+                    <label>長期股權投資具豐碩潛在利益,帳上並無列示</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="5">
+                    <label>逾放比已獲改善</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="5">
+                    <label>存貨去化能力獲改善及未來營收獲改善</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="5">
+                    <label>有價證券等投資標的之資產品質佳</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-5">
+                    <label>與上下游廠商間之往來出現異常</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-5">
+                    <label>庫藏股過高</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-5">
+                    <label>資金用途或還款來源不當</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-5">
+                    <label>頻頻調降財測</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-5">
+                    <label>短期資金緊俏，信用擴張困難</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-5">
+                    <label>有價證券等投資標的之資產品質差</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-5">
+                    <label>存貨去化能力變差及未來營收變差</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>逾放比大幅提高或已獲改善</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>資產管理欠佳，收帳或存貨去化速度變慢</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>投資效益不彰，獲利無法支應利息</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>經營層、財務主管、簽證會計師頻換手</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>董事會趨內部化,家族化</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>內部重大異常關係人交易</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>董監事持續申讓持股</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>經營者偏好炒股</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>股價嚴重下跌或有不利於公司形象負面消息</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-10">
+                    <label>未來一年總體經濟及產業景氣展望顯著變差</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="index1" value="-15">
+                    <label>會計師查核保留意見</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h2 class="card-title text-center">評分
+                    <input type="checkbox" checked data-toggle="toggle" data-on="製造" data-off="非製造" data-style="ios" id="switch">
+                </h2>
+                <hr class="my-4">
+                <h4>經營能力</h4>
+                <div class="form-group">
+                    <label class="label-index1">營收成長率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">應收帳款週轉：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">存貨週轉：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <h4>獲利能力</h4>
+                <div class="form-group">
+                    <label class="label-index1">營收淨利率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">營業利益率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">淨值報酬率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <h4>償債能力</h4>
+                <div class="form-group">
+                    <label class="label-index1">流動比率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">速動比率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <h4>資本結構</h4>
+                <div class="form-group">
+                    <label class="label-index1">長期固定適率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="label-index1">負債比率：</label>
+                    <input type="text" class="index1" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <h4 class="text-center" id="result"></h4>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <a href="" class="btn btn-secondary btn-block" id="backBtn">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
